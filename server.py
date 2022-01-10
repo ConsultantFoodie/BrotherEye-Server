@@ -18,22 +18,27 @@ def calc_presence(img):
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     faces = face_cascade.detectMultiScale(gray, 1.1, 4)
     
-    return str(int(len(faces)>0))
+    return int(len(faces)>0)
 
 num=0
+presence=0
 face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
 
 async def hello(websocket, path):
     async for message in websocket:
-        global num, img_list
-        rec = await websocket.recv()
-        print("NUM:", num)
-        # print("got image {}".format(num))
-        num += 1
-        img = data_uri_to_cv2_img(rec)
-        presence = calc_presence(img)
-        print(presence)
-        await websocket.send(presence)
+        global num,presence
+        if len(message) > 20:
+            # print("NUM:", num)
+            # print(message)
+            # print("got image {}".format(num))
+            num += 1
+            img = data_uri_to_cv2_img(message)
+            presence += calc_presence(img)
+        else:
+            print(message)
+            print(presence, num)
+            await websocket.send(str(round(100*presence/num)))
+            presence, num = 0, 0
         
         # with open("./photos/img_{}.jpg".format(num),"wb") as f:
             
