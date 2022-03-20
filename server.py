@@ -3,11 +3,15 @@
 # WS server example
 
 import asyncio
-import websockets
 import base64
+import json
+import os
+import signal
+
 import cv2
 import numpy as np
-import json
+import websockets
+
 
 class Person:
     def __init__(self, ws, email, role):
@@ -76,7 +80,12 @@ async def handler(websocket, path):
                         person.presence, person.num_frames = 0, 0
 
 async def main():
-    async with websockets.serve(handler, "", 8000):
-        await asyncio.Future()  # run forever
+    loop = asyncio.get_running_loop()
+    stop = loop.create_future()
+    loop.add_signal_handler(signal.SIGTERM, stop.set_result, None)
+
+    port = int(os.environ.get("PORT", "8001"))
+    async with websockets.serve(handler, "", port):
+        await stop
 
 asyncio.run(main())

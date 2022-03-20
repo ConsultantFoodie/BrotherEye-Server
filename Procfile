@@ -1,1 +1,1 @@
-service: python3 server.py -m http.server
+web: python3 server.py -m http.server
